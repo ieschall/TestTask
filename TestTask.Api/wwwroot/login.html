@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="styles/login.css">
+</head>
+<body>
+<form id="loginForm" autocomplete="off">
+    <div class="form-field">
+        <input name="username" type="text" placeholder="Username" required />
+    </div>
+
+    <div class="form-field">
+        <input name="password" type="password" placeholder="Password" required />
+    </div>
+
+    <div class="form-field">
+        <button id="submitLogin" class="button" type="submit">Log in</button>
+    </div>
+</form>
+</body>
+<script>
+    
+    sessionStorage.clear();
+    // при нажатии на кнопку отправки формы идет запрос к api для аутентификации пользователя и получения токенов
+    document
+        .getElementById("submitLogin")
+        .addEventListener("click", async e => {
+            e.preventDefault();
+            // отправляет запрос и получаем ответ
+            const response = await fetch("api/login", {
+                method: "POST",
+                headers: {
+                    "Accept": "*/*",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    username: document.getElementById("loginForm").username.value,
+                    password: document.getElementById("loginForm").password.value
+                })
+            });
+            // если запрос прошел нормально
+            if (response.ok === true) {
+                // получаем данные
+                const data = await response.json();
+
+                // сохраняем токены в хранилище sessionStorage для дальнейшей работы с ними
+                sessionStorage.setItem("accessToken", data.accessToken);
+                sessionStorage.setItem("refreshToken", data.refreshToken);
+
+                // переходим на главную страницу
+                window.location.replace("/main.html");
+            }
+            else  // если произошла ошибка, получаем код статуса
+                console.log("Status: ", response.status);
+        });
+</script>
+</html>
